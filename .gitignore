@@ -1,0 +1,39 @@
+# Virtual environment
+venv/
+.env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+
+# Reports and logs
+allure-report/
+reports/
+screenshots/
+logs/
+*.log
+
+# Drivers
+webdriver/
+chromedriver*
+geckodriver*
+edgedriver*
+
+# Configs
+config.local.py
+.env.local
