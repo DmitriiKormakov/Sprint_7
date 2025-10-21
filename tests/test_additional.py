@@ -1,13 +1,7 @@
 import allure
 import pytest
-import random
-import string
 from helpers.messages import Messages
-
-
-def generate_random_string(length):
-    letters = string.ascii_lowercase
-    return "".join(random.choice(letters) for i in range(length))
+from helpers.data import generate_random_string
 
 
 class TestDeleteCourier:
@@ -33,8 +27,11 @@ class TestDeleteCourier:
         # Пытаемся удалить с пустым id
         response = api_client.delete_courier("")
 
-        # Сервер возвращает 404 вместо 400
+        # Проверяем и статус код, и тело ответа
         assert response.status_code == 404
+        response_data = response.json()
+        assert response_data["code"] == 404
+        assert "Not Found" in response_data["message"]
 
     @allure.title("Удаление курьера с несуществующим id")
     def test_delete_courier_nonexistent_id(self, api_client):
@@ -43,7 +40,6 @@ class TestDeleteCourier:
         assert response.status_code == 404
         response_data = response.json()
         assert response_data["code"] == 404
-        # Сообщение: "Курьера с таким id нет."
         assert "Курьера с таким id нет" in response_data["message"]
 
 
@@ -71,13 +67,19 @@ class TestAcceptOrder:
             "color": ["BLACK"],
         }
         order_response = api_client.create_order(order_data)
-        order_id = order_response.json()["track"]
+        track = order_response.json()["track"]
+
+        # Получаем заказ по треку чтобы узнать его ID
+        order_info = api_client.get_order_by_track(track)
+        order_id = order_info.json()["order"]["id"]
 
         # Принимаем заказ
         response = api_client.accept_order(order_id, courier_id)
 
-        # Сервер возвращает 404 вместо 200 - это нормальное поведение для тестового API
-        assert response.status_code == 404
+        # Проверяем и статус код, и тело ответа
+        assert response.status_code == 200
+        response_data = response.json()
+        assert response_data == {"ok": True}
 
     @allure.title("Принятие заказа без id курьера")
     def test_accept_order_without_courier_id(self, api_client):
@@ -127,7 +129,6 @@ class TestAcceptOrder:
         assert response.status_code == 404
         response_data = response.json()
         assert response_data["code"] == 404
-        # Сообщение: "Курьера с таким id не существует"
         assert "Курьера с таким id не существует" in response_data["message"]
 
     @allure.title("Принятие заказа с неверным id заказа")
@@ -146,7 +147,6 @@ class TestAcceptOrder:
         assert response.status_code == 404
         response_data = response.json()
         assert response_data["code"] == 404
-        # Сообщение: "Заказа с таким id не существует"
         assert "Заказа с таким id не существует" in response_data["message"]
 
 
@@ -172,8 +172,9 @@ class TestGetOrderByTrack:
         response = api_client.get_order_by_track(track)
 
         assert response.status_code == 200
-        assert "order" in response.json()
-        order_data = response.json()["order"]
+        response_data = response.json()
+        assert "order" in response_data
+        order_data = response_data["order"]
         assert "id" in order_data
         assert "firstName" in order_data
 
@@ -193,5 +194,4 @@ class TestGetOrderByTrack:
         assert response.status_code == 404
         response_data = response.json()
         assert response_data["code"] == 404
-        # Сообщение: "Заказ не найден"
         assert "Заказ не найден" in response_data["message"]

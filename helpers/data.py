@@ -4,18 +4,18 @@ import string
 from helpers.urls import Urls
 
 
+def generate_random_string(length):
+    """Генерирует случайную строку из букв нижнего регистра"""
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
+
+
 def register_new_courier_and_return_login_password():
     """
     Метод регистрации нового курьера
     Возвращает список [login, password, first_name] если регистрация успешна
     Возвращает пустой список если регистрация не удалась
     """
-    
-    def generate_random_string(length):
-        letters = string.ascii_lowercase
-        random_string = ''.join(random.choice(letters) for i in range(length))
-        return random_string
-
     login_pass = []
 
     # генерируем логин, пароль и имя курьера

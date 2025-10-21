@@ -1,13 +1,7 @@
 import allure
 import pytest
-import random
-import string
 from helpers.messages import Messages
-
-
-def generate_random_string(length):
-    letters = string.ascii_lowercase
-    return "".join(random.choice(letters) for i in range(length))
+from helpers.data import generate_random_string
 
 
 class TestCourierCreation:
@@ -16,10 +10,11 @@ class TestCourierCreation:
         login = generate_random_string(10)
         password = generate_random_string(10)
         first_name = generate_random_string(10)
-
+        
         response = api_client.create_courier(login, password, first_name)
         assert response.status_code == 201
-        assert response.json()["ok"] == True
+        response_data = response.json()  # Добавляем парсинг ответа
+        assert response_data["ok"] == True
 
     @allure.title("Нельзя создать двух одинаковых курьеров")
     def test_create_duplicate_courier_fails(self, api_client):
@@ -66,7 +61,9 @@ class TestCourierLogin:
         response = api_client.login_courier(login, password)
 
         assert response.status_code == 200
-        assert "id" in response.json()
+        response_data = response.json()  # Добавляем парсинг ответа
+        assert "id" in response_data
+        assert isinstance(response_data["id"], int)  # Проверяем тип ID
 
     @allure.title("Логин с неверным паролем")
     def test_login_courier_wrong_password(self, api_client):
@@ -104,6 +101,7 @@ class TestCourierLogin:
 
         # Сервер автоматически создает нового курьера при логине несуществующего
         assert response.status_code == 200
-        assert "id" in response.json()
-        courier_id = response.json()["id"]
+        response_data = response.json()  # Добавляем парсинг ответа
+        assert "id" in response_data
+        courier_id = response_data["id"]
         assert isinstance(courier_id, int)

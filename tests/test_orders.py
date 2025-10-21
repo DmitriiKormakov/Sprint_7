@@ -25,7 +25,9 @@ class TestOrderCreation:
         
         response = api_client.create_order(order_data)
         assert response.status_code == 201
-        assert "track" in response.json()
+        response_data = response.json()
+        assert "track" in response_data
+        assert isinstance(response_data["track"], int)
 
 
 class TestOrdersList:
@@ -33,5 +35,6 @@ class TestOrdersList:
     def test_get_orders_list_returns_orders(self, api_client):
         response = api_client.get_orders_list(limit=5)
         assert response.status_code == 200
-        assert "orders" in response.json()
+        response_data = response.json()
+        assert "orders" in response_data
         assert isinstance(response.json()["orders"], list)
